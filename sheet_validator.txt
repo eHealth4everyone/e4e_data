@@ -1,0 +1,105 @@
+Sub sbHighlightDuplicatesInColumn()
+    Dim lastRow As Long
+    Dim matchFoundIndex As Long
+    Dim iCntr As Long
+
+    lastRow = Sheets("Sheet1").Range("A1").SpecialCells(xlCellTypeLastCell).Row
+    For iCntr = 2 To lastRow
+        If Cells(iCntr, 1) <> "" Then
+            matchFoundIndex = WorksheetFunction.Match(Cells(iCntr, 1), Range(Cells(1, 1), Cells(iCntr, 1)), 0)
+            If iCntr <> matchFoundIndex Then
+                Sheets("Sheet1").Cells(iCntr, 1).Interior.Color = vbYellow
+            Else
+                Sheets("Sheet1").Cells(iCntr, 1).Interior.Color = vbGreen
+            End If
+        End If
+    Next
+    
+    'iterating over the 2 columns...
+    
+    numOfRows = ActiveWorkbook.Worksheets("Sheet1").Range("A2", Worksheets("Sheet1").Range("A2").End(xlDown)).Rows.Count
+    freq = numOfRows / 12
+    
+    Dim lastRowL As Long
+    lastRowL = Sheets("Sheet1").Range("L1").SpecialCells(xlCellTypeLastCell).Row
+    
+    Dim LastRowM As Long
+    LastRowM = Sheets("Sheet1").Range("M1").SpecialCells(xlCellTypeLastCell).Row
+    
+    Dim rg1 As Range, rg2 As Range
+    Set rg1 = ActiveWorkbook.Worksheets("Sheet1").Range("A2:A13")
+    Set rg2 = ActiveWorkbook.Worksheets("Sheet1").Range("K2:K13")
+    
+    ' Create dynamic array
+    Dim tmpArray1 As Variant, tempArray2 As Variant
+    Dim code As Variant, value As Variant
+        
+    'Dump the range into a 2D array
+    tmpArray1 = rg1.value
+    tmpArray2 = rg2.value
+    
+    'Resize the 1D array
+    ReDim code(1 To UBound(tmpArray1, 1))
+    ReDim value(1 To UBound(tmpArray2, 1))
+    
+    'Convert 2D to 1D
+    For i = 1 To UBound(code, 1)
+        code(i) = tmpArray1(i, 1)
+        value(i) = tmpArray2(i, 1)
+    Next
+        
+    For cnt = 1 To freq
+        'iterate over col-L
+        Dim u As Integer, v As Integer
+        u = cnt * 12 + 2
+        v = u + 11
+        
+        Dim iTrack As Integer
+        iTrack = 1
+        'iterate over col-L
+        For iCntr = u To v
+            If Cells(iCntr, 12) <> "" Then
+                
+                'matchFoundIndex = WorksheetFunction.Match(Cells(iCntr, 12), Range(Cells(1, 12), Cells(iCntr, 12)), 0)
+                matchFoundValue = Cells(iCntr, 12).value
+                If value(iTrack) <> matchFoundValue Then
+                    Sheets("Sheet1").Cells(iCntr, 12).Interior.Color = vbYellow
+                Else
+                    Sheets("Sheet1").Cells(iCntr, 12).Interior.Color = vbGreen
+                End If
+            End If
+            iTrack = iTrack + 1
+        Next
+        
+        iTrack = 1
+        'iterate over col-M
+        For iCntr = u To v
+            If Cells(iCntr, 13) <> "" Then
+                'matchFoundIndex = WorksheetFunction.Match(Cells(iCntr, 13), Range(Cells(1, 13), Cells(iCntr, 13)), 0)
+                
+                matchFoundValue = Cells(iCntr, 13).value
+                If code(iTrack) <> matchFoundValue Then
+                    Sheets("Sheet1").Cells(iCntr, 13).Interior.Color = vbRed
+                Else
+                    Sheets("Sheet1").Cells(iCntr, 13).Interior.Color = vbGreen
+                End If
+            End If
+            iTrack = iTrack + 1
+        Next
+    Next
+    
+End Sub
+Private Sub Worksheet_Change(ByVal Target As Range)
+
+    Dim curColor As Variant
+    curColor = ActiveCell.Interior.Color
+    If Application.CountIf(Range("A:A"), Target) > 1 Then
+        MsgBox "Duplicate Data", vbCritical, "Remove Data"
+        Target.value = ""
+        'ActiveCell.Offset(RowOffset:=-1).EntireRow.Interior.Color = curColor
+    End If
+End Sub
+
+Private Sub Worksheet_SelectionChange(ByVal Target As Range)
+
+End Sub
